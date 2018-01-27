@@ -861,13 +861,6 @@ void servo2_pin_config (void)
  PORTB = PORTB | 0x40; //setting PORTB 6 pin to logic 1
 }
 
-//Configure PORTB 7 pin for servo motor 3 operation
-void servo3_pin_config (void)
-{
- DDRB  = DDRB | 0x80;  //making PORTB 7 pin output
- PORTB = PORTB | 0x80; //setting PORTB 7 pin to logic 1
-}
-
 
 
 //Initialize the ports
@@ -875,7 +868,6 @@ void port_init1(void)
 {
  servo1_pin_config(); //Configure PORTB 5 pin for servo motor 1 operation
  servo2_pin_config(); //Configure PORTB 6 pin for servo motor 2 operation 
- servo3_pin_config(); //Configure PORTB 7 pin for servo motor 3 operation  
 }
 
 //TIMER1 initialization in 10 bit fast PWM mode  
@@ -923,14 +915,7 @@ void servo_2(unsigned char degrees)
  OCR1BL = (unsigned char) PositionTiltServo;
 }
 
-//Function to rotate Servo 3 by a specified angle in the multiples of 1.86 degrees
-void servo_3(unsigned char degrees)
-{
- float PositionServo = 0;
- PositionServo = ((float)degrees / 1.86) + 35.0;
- OCR1CH = 0x00;
- OCR1CL = (unsigned char) PositionServo;
-}
+
 
 //servo_free functions unlocks the servo motors from the any angle 
 //and make them free by giving 100% duty cycle at the PWM. This function can be used to 
@@ -947,12 +932,6 @@ void servo_2_free (void) //makes servo 2 free rotating
  OCR1BH = 0x03;
  OCR1BL = 0xFF; //Servo 2 off
 }
-
-void servo_3_free (void) //makes servo 3 free rotating
-{
- OCR1CH = 0x03;
- OCR1CL = 0xFF; //Servo 3 off
-} 
 
 
 
@@ -981,19 +960,17 @@ void pickup_1() {
  {
   servo_1(i);
   _delay_ms(30);
+ }
+_delay_ms(1000);
+for (i = 0; i <90; i++)
+ {
   servo_2(i);
-  _delay_ms(30);
-  servo_3(i);
   _delay_ms(30);
  }
 
- _delay_ms(2000);
+ _delay_ms(200);
  servo_1_free(); 
  servo_2_free();
- servo_3_free();
- while(1);
-
-
 
     //ServoCodeEnd
     
