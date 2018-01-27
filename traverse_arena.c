@@ -26,7 +26,32 @@ unsigned char thr = 12;
 // posenc
 volatile unsigned long int ShaftCountLeft = 0; //to keep track of left position encoder
 volatile unsigned long int ShaftCountRight = 0; //to keep track of right position encoder
-volatile unsigned int Degrees; //to accept angle in degrees for turning
+volatile unsigned int Degrees; //to accept angle in degrees for turning/*
+
+#define BAUD 9600
+#define BRC ((F_CPU/BAUD/16)-1)
+
+//XBee*********************************************
+
+void USART_init(void)
+{
+    UBRR0 = BRC;
+
+    UCSR0C = ((0<<USBS0)|(1 << UCSZ01)|(1<<UCSZ00));
+    UCSR0B = ((1<<RXEN0)|(1<<TXEN0));
+}
+
+void USART_send( unsigned char data)
+{
+    //while the transmit buffer is not empty loop
+    while(!(UCSR0A & (1<<UDRE0)));
+
+    //when the buffer is empty write data to the transmitted
+    UDR0 = data;
+}
+
+
+//*******************************xbee
 
 //Function to configure LCD port
 void lcd_port_config (void)
@@ -34,6 +59,7 @@ void lcd_port_config (void)
  DDRC = DDRC | 0xF7; //all the LCD pin's direction set as output
  PORTC = PORTC & 0x80; // all the LCD pins are set to logic 0 except PORTC 7
 }
+
 
 
 //
@@ -840,8 +866,9 @@ void init_devices (void)
     left_position_encoder_interrupt_init();
     right_position_encoder_interrupt_init();
 	port_init1();
- timer1_init();
-	sei();   //Enables the global interrupts 
+    timer1_init();
+    USART_init();
+	sei();   //Enables the global interrupts
 }
 
 
@@ -867,13 +894,13 @@ void servo2_pin_config (void)
 void port_init1(void)
 {
  servo1_pin_config(); //Configure PORTB 5 pin for servo motor 1 operation
- servo2_pin_config(); //Configure PORTB 6 pin for servo motor 2 operation 
+ servo2_pin_config(); //Configure PORTB 6 pin for servo motor 2 operation
 }
 
-//TIMER1 initialization in 10 bit fast PWM mode  
+//TIMER1 initialization in 10 bit fast PWM mode
 //prescale:256
 // WGM: 7) PWM 10bit fast, TOP=0x03FF
-// actual value: 52.25Hz 
+// actual value: 52.25Hz
 void timer1_init(void)
 {
  TCCR1B = 0x00; //stop
@@ -885,7 +912,7 @@ void timer1_init(void)
  OCR1BL = 0xFF;	//Output Compare Register low Value For servo 2
  OCR1CH = 0x03;	//Output compare Register high value for servo 3
  OCR1CL = 0xFF;	//Output Compare Register low Value For servo 3
- ICR1H  = 0x03;	
+ ICR1H  = 0x03;
  ICR1L  = 0xFF;
  TCCR1A = 0xAB; /*{COM1A1=1, COM1A0=0; COM1B1=1, COM1B0=0; COM1C1=1 COM1C0=0}
  					For Overriding normal port functionality to OCRnA outputs.
@@ -897,7 +924,7 @@ void timer1_init(void)
 
 
 //Function to rotate Servo 1 by a specified angle in the multiples of 1.86 degrees
-void servo_1(unsigned char degrees)  
+void servo_1(unsigned char degrees)
 {
  float PositionPanServo = 0;
   PositionPanServo = ((float)degrees / 1.86) + 35.0;
@@ -917,13 +944,13 @@ void servo_2(unsigned char degrees)
 
 
 
-//servo_free functions unlocks the servo motors from the any angle 
-//and make them free by giving 100% duty cycle at the PWM. This function can be used to 
+//servo_free functions unlocks the servo motors from the any angle
+//and make them free by giving 100% duty cycle at the PWM. This function can be used to
 //reduce the power consumption of the motor if it is holding load against the gravity.
 
 void servo_1_free (void) //makes servo 1 free rotating
 {
- OCR1AH = 0x03; 
+ OCR1AH = 0x03;
  OCR1AL = 0xFF; //Servo 1 off
 }
 
@@ -955,7 +982,7 @@ void pickup_1() {
 
  unsigned char i = 0;
  init_devices();
- 	
+
  for (i = 0; i <90; i++)
  {
   servo_1(i);
@@ -969,11 +996,11 @@ for (i = 0; i <90; i++)
  }
 
  _delay_ms(200);
- servo_1_free(); 
+ servo_1_free();
  servo_2_free();
 
     //ServoCodeEnd
-    
+
     right_degrees(90);
     _delay_ms(100);
 	velocity(150,150);
