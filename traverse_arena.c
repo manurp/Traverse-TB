@@ -23,6 +23,7 @@ unsigned char Left_white_line = 0;
 unsigned char Center_white_line = 0;
 unsigned char Right_white_line = 0;
 unsigned char thr = 12;
+unsigned char min_vel = 85;
 
 // posenc
 volatile unsigned long int ShaftCountLeft = 0; //to keep track of left position encoder
@@ -453,17 +454,17 @@ void line_follow() {
             //forward();
             if(flag<3){
             right();
-            velocity(100,100);
+            velocity(min_vel,min_vel);
             flag++;
             }
             else if(flag<12){
             left();
-            velocity(100,100);
+            velocity(min_vel,min_vel);
             flag++;
             }
             else if(flag<15) {
             right();
-            velocity(100,100);
+            velocity(min_vel,min_vel);
             flag++;
             }
             else{
@@ -510,19 +511,19 @@ void line_follow_1(unsigned char wheel_speed) {
         if(Center_white_line<thr && Left_white_line<thr && Right_white_line<thr)
         {
             //forward();
-            if(flag<3){
+            if(flag<5){
             right();
-            velocity(80,80);
+            velocity(min_vel,min_vel);
             flag++;
             }
-            else if(flag<12){
+            else if(flag<15){
             left();
-            velocity(80,80);
+            velocity(min_vel,min_vel);
             flag++;
             }
-            else if(flag<15) {
+            else if(flag<20) {
             right();
-            velocity(80,80);
+            velocity(min_vel,min_vel);
             flag++;
             }
             else{
@@ -569,17 +570,17 @@ void line_follow_back(unsigned char wheel_speed) {
         if(Center_white_line<thr && Left_white_line<thr && Right_white_line<thr)
         {
             //forward();
-            if(flag<3){
+            if(flag<5){
             right();
             velocity(80,80);
             flag++;
             }
-            else if(flag<12){
+            else if(flag<15){
             left();
             velocity(80,80);
             flag++;
             }
-            else if(flag<15) {
+            else if(flag<20) {
             right();
             velocity(80,80);
             flag++;
@@ -621,28 +622,28 @@ void left_adjust() {
 
 void temp_fn() {
 
-    right_degrees(45);
+    right_degrees(40);
+    _delay_ms(100);
 
-    /*
     while(1) {
         if(ADC_Conversion(1)>thr||ADC_Conversion(2)>thr||ADC_Conversion(3)>thr)
             break;
-    }*/
-    right_adjust();
+    }
+   // right_adjust();
 
     while(flag<15) {
     line_follow();
 	}
 
-/*
+
 	while(1) {
 	right();
 	velocity(100,100);
 	if(ADC_Conversion(1)>thr||ADC_Conversion(2)>thr||ADC_Conversion(3)>thr)
 		break;
 	}
-*/
-    right_adjust();
+
+    //right_adjust();
     // A
     unsigned char count = 3;
     uint8_t turn=1;
@@ -669,15 +670,14 @@ void temp_fn() {
 	velocity(100,100);
 	_delay_ms(2000);
 
-    /*
     while(1) {
         right();
         velocity(150,150);
         if(ADC_Conversion(1)>thr||ADC_Conversion(2)>thr||ADC_Conversion(3)>thr)
             break;
     }
-*/
-    right_adjust();
+
+   // right_adjust();
 
     count = 2;
 
@@ -697,13 +697,13 @@ void temp_fn() {
         velocity(100,100);
         _delay_ms(1000);
 
-       /* while(1) {
+        while(1) {
             right();
             velocity(150,150);
             if(ADC_Conversion(1)>thr||ADC_Conversion(2)>thr||ADC_Conversion(3)>thr)
                 break;
-        }*/
-        right_adjust();
+        }
+       // right_adjust();
     }
 
     buzzer_on();
@@ -725,17 +725,23 @@ void temp_fn() {
     }
 
     //********Rotating structure************
-    count=10;
+   /* count=10;
     while(count){
         line_follow();
         count--;
-    }
+    }*/
 
-    adc_reading = ADC_Conversion(11);
+    unsigned int adc_reading = ADC_Conversion(11);
     unsigned int sharp=Sharp_GP2D12_estimation(adc_reading);
 
+	while(sharp>100){
 
-   
+		 unsigned int adc_reading = ADC_Conversion(11);
+   		 unsigned int sharp=Sharp_GP2D12_estimation(adc_reading);
+
+		line_follow();
+	}
+
 
 	velocity(0,0);
 
@@ -1099,7 +1105,7 @@ void pickup_1() {
 
     uint8_t x=3;//no. of repetitions
     while(x--) {
-        USART_send('2')
+        USART_send('2');
         USART_send('r');
     }
     //ServoCode
