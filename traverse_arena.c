@@ -32,8 +32,6 @@ volatile unsigned int Degrees; //to accept angle in degrees for turning/*
 #define BAUD 9600
 #define BRC ((F_CPU/BAUD/16)-1)
 
-//XBee*********************************************
-
 unsigned int Sharp_GP2D12_estimation(unsigned char adc_reading)
 {
     float distance;
@@ -47,10 +45,7 @@ unsigned int Sharp_GP2D12_estimation(unsigned char adc_reading)
     return distanceInt;
 }
 
-
-
-
-
+//XBee*********************************************
 void USART_init(void)
 {
     UBRR0 = BRC;
@@ -736,8 +731,8 @@ void temp_fn() {
         count--;
     }
 
-    
-    unsigned int sharp=Sharp_GP2D12_estimation(unsigned char adc_reading);
+    adc_reading = ADC_Conversion(11);
+    unsigned int sharp=Sharp_GP2D12_estimation(adc_reading);
 
 
    
