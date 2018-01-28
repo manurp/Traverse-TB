@@ -7,6 +7,7 @@
 #include "lcd.h"
 
 void port_init();
+void timer1_init(void);
 void timer5_init();
 void velocity(unsigned char, unsigned char);
 void motors_delay();
@@ -257,6 +258,11 @@ void motion_set (unsigned char Direction)
 void forward (void)
 {
   motion_set (0x06);
+}
+
+void back(void)
+{
+    motion_set(0x09);
 }
 
 void left (void) //Left wheel backward, Right wheel forward
@@ -514,28 +520,117 @@ void line_follow_1(unsigned char wheel_speed) {
         }
 }
 
+void line_follow_back(unsigned char wheel_speed) {
+        Left_white_line = ADC_Conversion(3);    //Getting data of Left WL Sensor
+        Center_white_line = ADC_Conversion(2);  //Getting data of Center WL Sensor
+        Right_white_line = ADC_Conversion(1);   //Getting data of Right WL Sensor
+
+       // flag=0;
+
+        print_sensor(1,1,3);    //Prints value of White Line Sensor1
+        print_sensor(1,5,2);    //Prints Value of White Line Sensor2
+        print_sensor(1,9,1);    //Prints Value of White Line Sensor3
+
+
+
+        if(Center_white_line>=thr)
+        {
+            flag=1;
+            back();
+            velocity(wheel_speed,wheel_speed);
+        }
+
+        if((Left_white_line<thr)&&(Right_white_line>=thr) && (Center_white_line<thr))
+        {
+            flag=1;
+            back();
+            velocity(wheel_speed-30,wheel_speed);
+        }
+
+        if((Right_white_line<thr) && (Left_white_line>=thr)&&(Center_white_line<thr))
+        {
+            flag=1;
+            back();
+            velocity(wheel_speed,wheel_speed-30);
+        }
+
+        if(Center_white_line<thr && Left_white_line<thr && Right_white_line<thr)
+        {
+            //forward();
+            if(flag<3){
+            right();
+            velocity(80,80);
+            flag++;
+            }
+            else if(flag<12){
+            left();
+            velocity(80,80);
+            flag++;
+            }
+            else if(flag<15) {
+            right();
+            velocity(80,80);
+            flag++;
+            }
+            else{
+            forward();
+            velocity(0,0);
+            }
+        }
+}
+
+void right_adjust() {
+    Left_white_line = ADC_Conversion(3);    //Getting data of Left WL Sensor
+    Center_white_line = ADC_Conversion(2);  //Getting data of Center WL Sensor
+    Right_white_line = ADC_Conversion(1);   //Getting data of Right WL Sensor
+
+    while(1) {
+
+        forward();
+        velocity(250,220);
+        if(Center_white_line>=thr && Left_white_line<thr && Right_white_line<thr)
+            break;
+    }
+}
+
+void left_adjust() {
+    Left_white_line = ADC_Conversion(3);    //Getting data of Left WL Sensor
+    Center_white_line = ADC_Conversion(2);  //Getting data of Center WL Sensor
+    Right_white_line = ADC_Conversion(1);   //Getting data of Right WL Sensor
+
+    while(1) {
+        forward();
+        velocity(220,250);
+        if(Center_white_line>=thr && Left_white_line<thr && Right_white_line<thr)
+            break;
+    }
+}
+
 
 void temp_fn() {
 
     right_degrees(45);
 
+    /*
     while(1) {
         if(ADC_Conversion(1)>thr||ADC_Conversion(2)>thr||ADC_Conversion(3)>thr)
             break;
-    }
+    }*/
+    right_adjust();
 
     while(flag<15) {
     line_follow();
 	}
 
+/*
 	while(1) {
 	right();
 	velocity(100,100);
 	if(ADC_Conversion(1)>thr||ADC_Conversion(2)>thr||ADC_Conversion(3)>thr)
 		break;
-
 	}
-
+*/
+    right_adjust();
     // A
     unsigned char count = 3;
     uint8_t turn=1;
@@ -562,12 +657,15 @@ void temp_fn() {
 	velocity(100,100);
 	_delay_ms(2000);
 
+    /*
     while(1) {
         right();
         velocity(150,150);
         if(ADC_Conversion(1)>thr||ADC_Conversion(2)>thr||ADC_Conversion(3)>thr)
             break;
     }
+*/
+    right_adjust();
 
     count = 2;
 
@@ -587,12 +685,13 @@ void temp_fn() {
         velocity(100,100);
         _delay_ms(1000);
 
-        while(1) {
+       /* while(1) {
             right();
             velocity(150,150);
             if(ADC_Conversion(1)>thr||ADC_Conversion(2)>thr||ADC_Conversion(3)>thr)
                 break;
-        }
+        }*/
+        right_adjust();
     }
 
     buzzer_on();
@@ -613,11 +712,17 @@ void temp_fn() {
         }
     }
 
+    //********Rotating structure************
     count=10;
     while(count){
         line_follow();
         count--;
     }
+
+    /*
+
+
+    */
 
 	velocity(0,0);
 
@@ -978,6 +1083,12 @@ void pickup_1() {
     left_degrees(90);
     _delay_ms(100);
 
+
+    uint8_t x=3;//no. of repetitions
+    while(x--) {
+        USART_send('2')
+        USART_send('r');
+    }
     //ServoCode
 
  unsigned char i = 0;
