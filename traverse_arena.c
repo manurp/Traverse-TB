@@ -867,7 +867,7 @@ void init_devices (void)
     right_position_encoder_interrupt_init();
 	port_init1();
     timer1_init();
-    USART_init();3
+    USART_init();
 	sei();   //Enables the global interrupts
 }
 
