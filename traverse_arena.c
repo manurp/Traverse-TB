@@ -34,6 +34,23 @@ volatile unsigned int Degrees; //to accept angle in degrees for turning/*
 
 //XBee*********************************************
 
+unsigned int Sharp_GP2D12_estimation(unsigned char adc_reading)
+{
+    float distance;
+    unsigned int distanceInt;
+    distance = (int)(10.00*(2799.6*(1.00/(pow(adc_reading,1.1546)))));
+    distanceInt = (int)distance;
+    if(distanceInt>800)
+    {
+        distanceInt=800;
+    }
+    return distanceInt;
+}
+
+
+
+
+
 void USART_init(void)
 {
     UBRR0 = BRC;
@@ -719,10 +736,11 @@ void temp_fn() {
         count--;
     }
 
-    /*
+    
+    unsigned int sharp=Sharp_GP2D12_estimation(unsigned char adc_reading);
 
 
-    */
+   
 
 	velocity(0,0);
 
